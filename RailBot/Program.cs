@@ -12,8 +12,7 @@ namespace RailBot
 			var carrier = new Carrier (wc);
 
 			while (true) {
-				carrier.GetBotData ();
-				if(carrier.Question != null)
+				if(carrier.GetBotData ())
 					Console.WriteLine (carrier.Question);
 				Thread.Sleep (5000);
 			}

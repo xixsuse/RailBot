@@ -27,13 +27,15 @@ namespace RailBot
 			_wc = wc;
 		}
 
-		public void GetBotData ()
+		public bool GetBotData ()
 		{			
 			Question = _wc.DownloadString (Addresses.geturl);
 			if (Question == PreviousQuestion)
-				Question = null;
-			else
+				return false;
+			else {
 				PreviousQuestion = Question;
+				return true;
+			}
 		}
 	}
 }
