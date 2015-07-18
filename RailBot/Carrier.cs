@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace RailBot
 {
@@ -28,13 +30,36 @@ namespace RailBot
 		}
 
 		public bool GetBotData ()
-		{			
-			Question = _wc.DownloadString (Addresses.geturl);
+		{
+			Question = _wc.DownloadString (Addresses.GetURL());
 			if (Question == PreviousQuestion)
 				return false;
 			else {
 				PreviousQuestion = Question;
 				return true;
+			}
+		}
+
+		public bool AskToWeb(QuestionData parameters)
+		{
+			using (WebClient client = new WebClient())
+			{
+				try
+				{
+					byte[] response =
+						client.UploadValues(Addresses.ViaggiaURL, new NameValueCollection()
+							{
+								{ "stazione", parameters.Station },
+								{ "lang", "IT" }
+							});
+
+					Response = System.Text.Encoding.UTF8.GetString(response);
+						return true;
+				}
+				catch
+				{
+					return false;
+				}
 			}
 		}
 	}

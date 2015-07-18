@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace RailBot
 {
@@ -8,13 +9,16 @@ namespace RailBot
 	{
 		public static void Main (string[] args)
 		{
-			var wc = new WebClient ();
-			var carrier = new Carrier (wc);
+			using (var wc = new WebClient ()) {
+				var carrier = new Carrier (wc);
 
-			while (true) {
-				if(carrier.GetBotData ())
-					Console.WriteLine (carrier.Question);
-				Thread.Sleep (5000);
+				while (true) {
+					if (carrier.GetBotData ())
+						DataParser.ParseQuestion (carrier.Question);
+//					if (carrier.AskToWeb (new QuestionData("chieri")))
+//						Console.WriteLine (carrier.Response);
+					Thread.Sleep (5000);
+				}
 			}
 		}
 	}
