@@ -7,7 +7,7 @@ namespace RailBot
 
 	public static class DataParser
 	{
-		class Constants
+		static class Constants
 		{
 			public static readonly string UpdateID = "\"update_id\":";
 			public static readonly string ChatID = "\"chat\":{\"id\":";
@@ -77,6 +77,6 @@ namespace RailBot
 			}
 
 			data.SetQuestionInfo(true, station, trainNumber, t);
+		}
 	}
-}
 }
