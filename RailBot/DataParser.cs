@@ -51,7 +51,8 @@ namespace RailBot
             
 		private static void ParseBotCommand(string command, QuestionData data)
 		{
-			if (command.Remove(2) != "\\/")
+            
+            if (command.Length <= 2 || command.Remove(2) != "\\/")
 			{
                 data.SetError("Comando non valido. "+
                     "I comandi cominciano con /. "+
@@ -70,7 +71,8 @@ namespace RailBot
             {
                 argument += split[i] + " ";
             }
-                
+            argument = argument.TrimEnd();
+
             if (argument == null)
             {
                 data.SetError("Argomento non valido. "+

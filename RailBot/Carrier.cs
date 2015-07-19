@@ -38,23 +38,28 @@ namespace RailBot
 				{
 					byte[] response =
 						client.UploadValues(Addresses.ViaggiaURL, 
+                            "POST",
                             new NameValueCollection()
 							{
-								{ "stazione", data.Station },
+                                { "stazione", data.Station },
 								{ "lang", "IT" }
 							});
 
 					Response = System.Text.Encoding.UTF8.GetString(response);
 				}
-                catch
+                catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
+                    data.SetError("Errore nella ricezione dei dati. "+
+                        "Per favore riportare questo errore al team " +
+                        "di sviluppo.");
                 }
 			}
 		}
 
-        public void SendDataToBot(string data)
+        public void SendDataToBot(string message, QuestionData data)
         {
-            throw new NotImplementedException();
+            _wc.DownloadString (Addresses.SendURL(data.ChatID, message));
         }
 	}
 }
