@@ -41,6 +41,7 @@
     <Compile Include="QuestionData.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Commands.cs" />
+    <Compile Include="Configurator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

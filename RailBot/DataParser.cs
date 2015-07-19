@@ -18,65 +18,94 @@ namespace RailBot
 		{
 			var dataList = new List<QuestionData> ();
 
-			var n = new Regex(Regex.Escape(Constants.UpdateID)).Matches(question).Count;
+			var n = new Regex(Regex.Escape(Constants.UpdateID))
+                .Matches(question).Count;
 
 			var s = question;
+            var lastUpdateID = 0;
 			for (int i = 0; i < n; i++) {
 
-				s = s.Substring (s.IndexOf (Constants.UpdateID) + Constants.UpdateID.Length);
+				s = s.Substring (s.IndexOf (Constants.UpdateID) + 
+                    Constants.UpdateID.Length);
 				var updateID = int.Parse(s.Remove(s.IndexOf(',')));
-
-				s = s.Substring (s.IndexOf (Constants.ChatID) + Constants.ChatID.Length);
+                lastUpdateID = updateID;
+				s = s.Substring (s.IndexOf (Constants.ChatID) + 
+                    Constants.ChatID.Length);
 				var chatID = int.Parse(s.Remove(s.IndexOf(',')));
 
-				s = s.Substring (s.IndexOf (Constants.Text) + Constants.Text.Length);
+				s = s.Substring (s.IndexOf (Constants.Text) + 
+                    Constants.Text.Length);
 				var text = s.Remove(s.IndexOf('\"'));
 
 				var data = new QuestionData (updateID, chatID);
 				dataList.Add (data);
 
 				ParseBotCommand (text, data);
-			}
+
+            }
+            if (lastUpdateID != 0)
+                Configurator.WriteConfiguration(lastUpdateID);
 
 			return dataList;
-		}
-
-
+            }
+            
 		private static void ParseBotCommand(string command, QuestionData data)
 		{
 			if (command.Remove(2) != "\\/")
 			{
-				data.SetQuestionInfo(false);
+                data.SetError("Comando non valido. "+
+                    "I comandi cominciano con /. "+
+                    "Scrivi /help per avere un aiuto");
 				return;
 			}
 
 			var split = command.Split (' ');
 
-			var s = split [0].Replace ("\\/", "");
+            var s = split[0].Replace("\\/", "");
+            if (data.IsStartOrHelp(s))
+                return;
 
-			string station = null;
+            string argument = null;
+            for (int i = 1; i < split.Length; i++)
+            {
+                argument += split[i] + " ";
+            }
+                
+            if (argument == null)
+            {
+                data.SetError("Argomento non valido. "+
+                    "Tutti i comandi devono avere un argomento. "+
+                    "Scrivi /help per avere aiuto.");
+                return;
+            }
+
+            string station = null;
 			int? trainNumber = null;
 			int volatileTrainNumber = 0;
+            var trainType = TrainTypeEnum.Both;
 
-			if (split.Length > 1) {
-				if (s.ToUpper () == Commands.Station.ToUpper ())
-					station = split [1];
-				else if (s.ToUpper () == Commands.TrainNumber.ToUpper () && 
-					int.TryParse (split [1], out volatileTrainNumber))
-					trainNumber = volatileTrainNumber;
-			}
+            if (s.ToUpper() == Commands.Station.ToUpper())
+                station = argument;
+            else if (s.ToUpper() == Commands.TrainNumber.ToUpper() &&
+                     int.TryParse(argument, out volatileTrainNumber))
+                trainNumber = volatileTrainNumber;
+            else if (s.ToUpper() == Commands.Arrivals.ToUpper())
+            {
+                station = argument;
+                trainType = TrainTypeEnum.Arrivals;
+            }
+            else if (s.ToUpper() == Commands.Departures.ToUpper())
+            {
+                station = argument;
+                trainType = TrainTypeEnum.Departures;
+            }
 
-			var t = TrainTypeEnum.Both;
-
-			if (split.Length > 2) {
-				if (split [2].ToUpper ().Contains ("arriv".ToUpper ()))
-					t = TrainTypeEnum.Arrivals;
-				else if (split [2].ToUpper ().Contains ("part".ToUpper ()) ||
-				        split [2].ToUpper ().Contains ("depart".ToUpper ()))
-					t = TrainTypeEnum.Departures;
-			}
-
-			data.SetQuestionInfo(true, station, trainNumber, t);
+			data.SetQuestionInfo(true, station, trainNumber, trainType);
 		}
+
+        public static string ParseResponse(string response)
+        {
+            throw new NotImplementedException();
+        }
 	}
 }

@@ -12,6 +12,7 @@ namespace RailBot
 
 	public enum QuestionTypeEnum
 	{
+        None,
 		Station,
 		TrainNumber,
 	}

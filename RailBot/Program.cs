@@ -10,14 +10,25 @@ namespace RailBot
 		public static void Main (string[] args)
 		{
 			using (var wc = new WebClient ()) {
-				var carrier = new Carrier (wc);
 
-				while (true) {
-					if (carrier.GetBotData ())
-						DataParser.ParseQuestion (carrier.Question);
-//					if (carrier.AskToWeb (new QuestionData("chieri")))
-//						Console.WriteLine (carrier.Response);
-					Thread.Sleep (5000);
+                while (true) {
+                    var carrier = new Carrier (wc);
+                    carrier.GetBotData();
+                    if (carrier.Question != null){
+                        var questions = 
+                            DataParser.ParseQuestion (carrier.Question);
+                        foreach (var data in questions)
+                        {
+                            carrier.AskToWeb(data);
+                            if (carrier.Response != null)
+                            {
+                                var response = 
+                                    DataParser.ParseResponse(carrier.Response);
+                                carrier.SendDataToBot(response);
+                            }
+                        }
+                    }
+//					Thread.Sleep (5000);
 				}
 			}
 		}

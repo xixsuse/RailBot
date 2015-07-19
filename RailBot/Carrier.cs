@@ -17,11 +17,6 @@ namespace RailBot
 			private set;
 		}
 
-		public string PreviousQuestion {
-			get;
-			private set;
-		}
-
 		WebClient _wc;
 
 		public Carrier (WebClient wc)
@@ -29,39 +24,38 @@ namespace RailBot
 			_wc = wc;
 		}
 
-		public bool GetBotData ()
+		public void GetBotData ()
 		{
-			Question = _wc.DownloadString (Addresses.GetURL());
-			if (Question == PreviousQuestion)
-				return false;
-			else {
-				PreviousQuestion = Question;
-				return true;
-			}
+            Question = _wc.DownloadString (Addresses.GetURL(
+                Configurator.GetOffsetFromConfiguration()));
 		}
 
-		public bool AskToWeb(QuestionData parameters)
+        public void AskToWeb(QuestionData data)
 		{
 			using (WebClient client = new WebClient())
 			{
 				try
 				{
 					byte[] response =
-						client.UploadValues(Addresses.ViaggiaURL, new NameValueCollection()
+						client.UploadValues(Addresses.ViaggiaURL, 
+                            new NameValueCollection()
 							{
-								{ "stazione", parameters.Station },
+								{ "stazione", data.Station },
 								{ "lang", "IT" }
 							});
 
 					Response = System.Text.Encoding.UTF8.GetString(response);
-						return true;
 				}
-				catch
-				{
-					return false;
-				}
+                catch
+                {
+                }
 			}
 		}
+
+        public void SendDataToBot(string data)
+        {
+            throw new NotImplementedException();
+        }
 	}
 }
 
