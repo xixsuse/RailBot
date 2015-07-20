@@ -7,7 +7,7 @@ namespace RailBot
 {
 	public class Carrier
 	{
-		public string Response {
+        public string Response {
 			get;
 			private set;
 		}
@@ -45,21 +45,26 @@ namespace RailBot
 								{ "lang", "IT" }
 							});
 
-					Response = System.Text.Encoding.UTF8.GetString(response);
+                    Response = System.Text.Encoding.UTF8.GetString(response);
 				}
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    data.SetError("Errore nella ricezione dei dati. "+
+                    data.ErrorMessage = "Errore nella ricezione dei dati. "+
                         "Per favore riportare questo errore al team " +
-                        "di sviluppo.");
+                        "di sviluppo.";
                 }
 			}
 		}
 
-        public void SendDataToBot(string message, QuestionData data)
+        public void SendDataToBot(ResponseData response)
         {
-            _wc.DownloadString (Addresses.SendURL(data.ChatID, message));
+            if(!response.IsError)
+                _wc.DownloadString (Addresses.SendURL(response.ChatID, 
+                    response.Message));
+            else
+                _wc.DownloadString (Addresses.SendURL(response.ChatID, 
+                    response.ErrorMessage));
         }
 	}
 }

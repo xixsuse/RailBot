@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Windows.Forms;
+using System.IO;
 
 namespace RailBot
 {
@@ -13,6 +15,8 @@ namespace RailBot
 			public static readonly string ChatID = "\"chat\":{\"id\":";
 			public static readonly string Text = "\"text\":\"";
 		}
+
+        #region Question Parsing
 
 		public static List<QuestionData> ParseQuestion(string question)
 		{
@@ -54,9 +58,9 @@ namespace RailBot
             
             if (command.Length <= 2 || command.Remove(2) != "\\/")
 			{
-                data.SetError("Comando non valido. "+
+                data.ErrorMessage = "Comando non valido. "+
                     "I comandi cominciano con /. "+
-                    "Scrivi /help per avere un aiuto");
+                    "Scrivi /help per avere un aiuto";
 				return;
 			}
 
@@ -71,15 +75,15 @@ namespace RailBot
             {
                 argument += split[i] + " ";
             }
-            argument = argument.TrimEnd();
 
             if (argument == null)
             {
-                data.SetError("Argomento non valido. "+
+                data.ErrorMessage = "Argomento non valido. "+
                     "Tutti i comandi devono avere un argomento. "+
-                    "Scrivi /help per avere aiuto.");
+                    "Scrivi /help per avere aiuto.";
                 return;
             }
+            argument = argument.TrimEnd();
 
             string station = null;
 			int? trainNumber = null;
@@ -105,9 +109,37 @@ namespace RailBot
 			data.SetQuestionInfo(true, station, trainNumber, trainType);
 		}
 
-        public static string ParseResponse(string response)
+        #endregion
+
+        #region Response Parsing
+
+        public static ResponseData ParseResponse(string response, 
+            QuestionData qdata)
         {
-            throw new NotImplementedException();
+            var data = new ResponseData(qdata.UpdateID, qdata.ChatID);
+
+            if (qdata.IsError)
+            {
+                data.ErrorMessage = qdata.ErrorMessage;
+                return data;
+            }
+                
+
+
+            if (response.ToUpper()
+                .Contains("Inserire almeno 3 caratteri".ToUpper()))
+            {
+                data.ErrorMessage = "Selezionare una stazione esistenze";
+                return data;
+            }
+            else
+            {
+                data.Message = response;
+            }
+          
+            return data;
         }
+
+        #endregion
 	}
 }

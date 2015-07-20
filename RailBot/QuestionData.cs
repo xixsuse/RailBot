@@ -2,10 +2,8 @@
 
 namespace RailBot
 {
-	public class QuestionData
+    public class QuestionData : Data
 	{
-		public int UpdateID { get; private set;}
-		public int ChatID { get; private set;}
 		public string Station { get; private set;}
 		public int? TrainNumber { get; private set;}
 		public TrainTypeEnum TrainType { get; private set;}
@@ -24,22 +22,9 @@ namespace RailBot
 			}
 		}
 
-
-		public bool IsError {
-			get{ return (ErrorMessage == null ? false : true); }
-		}
-
-		string _errorMessage = null;
-		public string ErrorMessage {
-			get{ return _errorMessage; }
-			private set { _errorMessage = value; }
-		}
-
-		public QuestionData (int updateID, int chatID)
-		{
-			UpdateID = updateID;
-			ChatID = chatID;
-		}
+        public QuestionData (int updateID, int chatID) : 
+            base(updateID, chatID)
+		{ }
 
 		public void SetQuestionInfo (bool commandFound, string station = null, 
             int? trainNumber = null, 
@@ -56,11 +41,6 @@ namespace RailBot
 			TrainNumber = trainNumber;
 			TrainType = trainType;
 		}
-
-        public void SetError(string errorMesssage)
-        {
-            ErrorMessage = errorMesssage;
-        }
 
         public bool IsStartOrHelp(string command)
         {

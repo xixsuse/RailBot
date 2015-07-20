@@ -22,9 +22,10 @@ namespace RailBot
                             carrier.AskToWeb(data);
                             if (carrier.Response != null)
                             {
-                                var response = carrier.Response;
-//                                    DataParser.ParseResponse(carrier.Response);
-                                carrier.SendDataToBot(response, data);
+                                var responseData =
+                                    DataParser.ParseResponse(carrier.Response, 
+                                        data);
+                                carrier.SendDataToBot(responseData);
                             }
                         }
                     }
