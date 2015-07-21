@@ -8,12 +8,19 @@ namespace RailBot
 
         static class Constants
         {
+            private static readonly string HomeDir = 
+            (Environment.OSVersion.Platform == PlatformID.Unix
+            || Environment.OSVersion.Platform == PlatformID.MacOSX)
+            ? Environment.GetEnvironmentVariable("HOME")
+            : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+
+            private static readonly string ConfDir = ".railbot";
+
             public static readonly string ConfFileName = 
-                Path.Combine((Environment.OSVersion.Platform == PlatformID.Unix 
-                    || Environment.OSVersion.Platform == PlatformID.MacOSX)
-                    ? Environment.GetEnvironmentVariable("HOME")
-                    : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%"),
-                    ".railBotConf");
+                Path.Combine(HomeDir, ConfDir, "update");
+
+            public static readonly string TokenFileName = 
+                Path.Combine(HomeDir, ConfDir, "token");
         }
 
         public static void WriteConfiguration(int offset)
@@ -36,10 +43,30 @@ namespace RailBot
 
         private static string InternalGetOffsetFromConfiguration()
         {
-            var lines = File.ReadAllLines(Constants.ConfFileName);
-            return (!string.IsNullOrEmpty(lines[0]) &&
-                !string.IsNullOrWhiteSpace(lines[0]) ? lines[0] : null);
+            if (File.Exists(Constants.ConfFileName))
+            {
+                var lines = File.ReadAllLines(Constants.ConfFileName);
+                return lines[0].NullIfNullEmptyOrWhitespace();
+            }
+            return null;
         }
+
+        public static string GetAuthTokenFromConfiguration()
+        {
+            if (File.Exists(Constants.TokenFileName))
+            {
+                var lines = File.ReadAllLines(Constants.TokenFileName);
+                return lines[0].NullIfNullEmptyOrWhitespace();
+            }
+            return null;
+        }
+
+        private static string NullIfNullEmptyOrWhitespace(this string s)
+        {
+            return (!string.IsNullOrEmpty(s) && 
+                !string.IsNullOrWhiteSpace(s) ? s : null);
+        }
+
     }
 }
 

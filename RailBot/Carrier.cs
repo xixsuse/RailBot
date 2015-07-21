@@ -25,7 +25,7 @@ namespace RailBot
 		}
 
 		public void GetBotData ()
-		{
+        {
             Question = _wc.DownloadString (Addresses.GetURL(
                 Configurator.GetOffsetFromConfiguration()));
 		}
