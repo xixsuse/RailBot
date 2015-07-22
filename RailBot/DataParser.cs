@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
+using System.Text;
 
 namespace RailBot
 {
@@ -124,8 +125,6 @@ namespace RailBot
                 return data;
             }
                 
-
-
             if (response.ToUpper()
                 .Contains("Inserire almeno 3 caratteri".ToUpper()))
             {
@@ -136,7 +135,68 @@ namespace RailBot
             {
                 data.Message = response;
             }
-          
+
+
+            var builder = new StringBuilder();
+
+
+            var h1 = new Regex(@"<h1>.*<\/h1>");
+            var stazione = h1.Match(response);
+
+            builder.AppendLine(stazione.Value
+                .Replace("<h1>","")
+                .Replace("</h1>",""));
+            builder.AppendLine();
+
+            var numeroTreno = new Regex(@"<h2>.*<\/h2>");
+            var numeriTreni = numeroTreno.Matches(response);
+
+
+            var strong = new Regex(@"<strong>.*<\/strong>");
+            var strongs = strong.Matches(response);
+
+
+            int strongsCounter = 0;
+            foreach (Match m in numeriTreni)
+            {
+
+                builder.AppendLine();
+                if ((strongs[strongsCounter] as Match).Value.ToUpper()
+                    == "<strong>Partenze</strong>".ToUpper())
+                {
+                    builder.AppendLine("PARTENZE");
+                    builder.AppendLine();
+                    ++strongsCounter;
+                }
+
+                if ((strongs[strongsCounter] as Match).Value.ToUpper()
+                    == "<strong>arrivi</strong>".ToUpper())
+                {
+                    builder.AppendLine("ARRIVI");
+                    builder.AppendLine();
+                    ++strongsCounter;
+                }
+                    
+
+                builder.AppendLine(m.Value
+                    .Replace("<h2>","")
+                    .Replace("</h2>",""));
+
+                var actualStrongCounter = strongsCounter + 2;
+                for (int i = strongsCounter; i < actualStrongCounter; i++)
+                {
+                    builder.AppendLine((strongs[i] as Match).Value
+                        .Replace("<strong>","")
+                        .Replace("</strong>",""));
+
+                    ++strongsCounter;
+                }
+            }
+
+
+            data.Message = builder.ToString();
+            data.Message = response;
+
             return data;
         }
 
