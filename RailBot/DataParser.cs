@@ -15,24 +15,6 @@ namespace RailBot
 			public static readonly string UpdateID = "\"update_id\":";
 			public static readonly string ChatID = "\"chat\":{\"id\":";
 			public static readonly string Text = "\"text\":\"";
-
-            public static readonly string HelpMessage = 
-                "I comandi possibili sono:" + Environment.NewLine +
-                "/stazione" + Environment.NewLine +
-                "/partenze" + Environment.NewLine +
-                "/arrivi" + Environment.NewLine +
-                "seguiti dal nome della stazione di cui si vuole " +
-                "conoscere la situazione dei treni." + Environment.NewLine +
-                "Il bot risponderà con la situazione dei treni in tempo " +
-                "reale, binari, orario ed eventuale ritardo." +
-                Environment.NewLine + "In ogni momento puoi usare il comando" +
-                Environment.NewLine + "/help" + Environment.NewLine +
-                "Per rileggere questo aiuto.";
-
-            public static readonly string StartMessage = 
-                "BEVENUTO IN RAILBOT! " + Environment.NewLine +
-                "IL BOT CHE RENDE LA VITA DEL VIAGGIATORE PIU' SEMPLICE" +
-                Environment.NewLine + HelpMessage;
 		}
 
         #region Question Parsing
@@ -149,16 +131,6 @@ namespace RailBot
             if (qdata.IsError)
             {
                 data.ErrorMessage = qdata.ErrorMessage;
-                return data;
-            }
-            if (qdata.AmIHelp)
-            {
-                data.Message = Constants.HelpMessage;
-                return data;
-            }
-            if (qdata.AmIStart)
-            {
-                data.Message = Constants.StartMessage;
                 return data;
             }
             if (response.ToUpper()

@@ -7,6 +7,28 @@ namespace RailBot
 {
 	public class Carrier
 	{
+
+        class Constants
+        {
+            public static readonly string HelpMessage = 
+                "I comandi possibili sono:" + Environment.NewLine +
+                "/stazione" + Environment.NewLine +
+                "/partenze" + Environment.NewLine +
+                "/arrivi" + Environment.NewLine +
+                "seguiti dal nome della stazione di cui si vuole " +
+                "conoscere la situazione dei treni." + Environment.NewLine +
+                "Il bot risponderà con la situazione dei treni in tempo " +
+                "reale, binari, orario ed eventuale ritardo." +
+                Environment.NewLine + "In ogni momento puoi usare il comando" +
+                Environment.NewLine + "/help" + Environment.NewLine +
+                "Per rileggere questo aiuto.";
+
+            public static readonly string StartMessage = 
+                "BEVENUTO IN RAILBOT! " + Environment.NewLine +
+                "IL BOT CHE RENDE LA VITA DEL VIAGGIATORE PIU' SEMPLICE" +
+                Environment.NewLine + HelpMessage;
+        }
+
         public string Response {
 			get;
 			private set;
@@ -65,6 +87,20 @@ namespace RailBot
             else
                 _wc.DownloadString (Addresses.SendURL(response.ChatID, 
                     response.ErrorMessage));
+        }
+
+        public void SendStartOrHelpMessage(QuestionData data)
+        {
+            ResponseData r = new ResponseData(data.UpdateID, data.ChatID);
+            if (data.AmIHelp)
+            {
+                r.Message = Constants.HelpMessage;
+            }
+            if (data.AmIStart)
+            {
+                r.Message = Constants.StartMessage;
+            }
+            SendDataToBot(r);
         }
 	}
 }
