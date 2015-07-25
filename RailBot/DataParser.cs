@@ -136,68 +136,80 @@ namespace RailBot
                 data.Message = response;
             }
 
+            data.Message = ParsePage(response);
 
+            return data;
+        }
+
+        private static string ParsePage(string response)
+        {
             var builder = new StringBuilder();
-
-
             var h1 = new Regex(@"<h1>.*<\/h1>");
             var stazione = h1.Match(response);
-
             builder.AppendLine(stazione.Value
-                .Replace("<h1>","")
-                .Replace("</h1>",""));
+                .Replace("<h1>", "")
+                .Replace("</h1>", ""));
             builder.AppendLine();
-
             var numeroTreno = new Regex(@"<h2>.*<\/h2>");
             var numeriTreni = numeroTreno.Matches(response);
-
-
-            var strong = new Regex(@"<strong>.*<\/strong>");
+            var strong = 
+                new Regex(@"<strong>.*<\/strong>|[^!]--[^>]|\d+[\s]|in orario|ritardo.*\d+");
             var strongs = strong.Matches(response);
-
-
             int strongsCounter = 0;
+            var perDa = "Per: ";
             foreach (Match m in numeriTreni)
             {
-
                 builder.AppendLine();
-                if ((strongs[strongsCounter] as Match).Value.ToUpper()
-                    == "<strong>Partenze</strong>".ToUpper())
+                if ((strongs[strongsCounter] as Match).Value.ToUpper() == 
+                    "<strong>Partenze</strong>".ToUpper())
                 {
                     builder.AppendLine("PARTENZE");
                     builder.AppendLine();
                     ++strongsCounter;
                 }
-
-                if ((strongs[strongsCounter] as Match).Value.ToUpper()
-                    == "<strong>arrivi</strong>".ToUpper())
+                if ((strongs[strongsCounter] as Match).Value.ToUpper() == 
+                    "<strong>arrivi</strong>".ToUpper())
                 {
                     builder.AppendLine("ARRIVI");
                     builder.AppendLine();
+                    perDa = "Da: ";
                     ++strongsCounter;
                 }
-                    
-
-                builder.AppendLine(m.Value
-                    .Replace("<h2>","")
-                    .Replace("</h2>",""));
-
-                var actualStrongCounter = strongsCounter + 2;
+                builder.AppendLine("Treno: " + m.Value
+                    .Replace("<h2>", "")
+                    .Replace("</h2>", ""));
+                var actualStrongCounter = strongsCounter + 5;
+                var j = 0;
                 for (int i = strongsCounter; i < actualStrongCounter; i++)
                 {
+                    switch (j)
+                    {
+                        case 0:
+                            builder.Append(perDa);
+                            break;
+                        case 1:
+                            builder.Append("Delle ore: ");
+                            break;
+                        case 2:
+                            builder.Append("Binario previsto: ");
+                            break;
+                        case 3:
+                            builder.Append("Binario reale: ");
+                            break;
+                        case 4:
+                            builder.Append("Situazione: ");
+                            break;
+                        default:
+                            break;
+                    }
                     builder.AppendLine((strongs[i] as Match).Value
-                        .Replace("<strong>","")
-                        .Replace("</strong>",""));
-
+                        .Replace("<strong>", "")
+                        .Replace("</strong>", ""));
                     ++strongsCounter;
+                    ++j;
                 }
             }
-
-
-            data.Message = builder.ToString();
-            data.Message = response;
-
-            return data;
+            return builder.ToString();
         }
 
         #endregion
