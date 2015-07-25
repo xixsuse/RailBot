@@ -25,7 +25,18 @@ namespace RailBot
                                 var responseData =
                                     DataParser.ParseResponse(carrier.Response, 
                                         data);
-                                carrier.SendDataToBot(responseData);
+                                try{
+                                    carrier.SendDataToBot(responseData);
+                                }
+                                catch
+                                {
+                                    responseData.ErrorMessage = 
+                                        "Probabilmente" +
+                                        " la risposta è troppo " +
+                                        "lunga per le nostre caapcità. " +
+                                        "Provare con i comandi /arrivi e /partenze.";
+                                    carrier.SendDataToBot(responseData);
+                                }
                             }
                         }
                     }

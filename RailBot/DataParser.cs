@@ -128,7 +128,13 @@ namespace RailBot
             if (response.ToUpper()
                 .Contains("Inserire almeno 3 caratteri".ToUpper()))
             {
-                data.ErrorMessage = "Selezionare una stazione esistenze";
+                data.ErrorMessage = "Selezionare una stazione esistente";
+                return data;
+            }
+            else if (response.ToUpper()
+                .Contains("localita&#039; non trovata".ToUpper()))
+            {
+                data.ErrorMessage = "Località non trovata";
                 return data;
             }
             else
@@ -146,38 +152,63 @@ namespace RailBot
             var builder = new StringBuilder();
             var h1 = new Regex(@"<h1>.*<\/h1>");
             var stazione = h1.Match(response);
+
             builder.AppendLine(stazione.Value
                 .Replace("<h1>", "")
                 .Replace("</h1>", ""));
             builder.AppendLine();
+            
+            if (stazione.Value.ToUpper()
+                .Contains("cerca treno".ToUpper()))
+                return ParseChooseStationPage(builder, response);
+
+            return ParseTimeTablePage(response, builder);
+        }
+
+        private static string ParseChooseStationPage(StringBuilder builder, 
+            string response)
+        {
+            var options = new Regex(@">.*</o").Matches(response);
+
+            builder.AppendLine("Scegliere una stazione dalla seguente lista");
+            builder.AppendLine();
+
+            foreach (Match m in options)
+            {
+                builder.AppendLine(m.Value
+                    .Replace('>',' ')
+                    .Replace("</o",""));
+            }
+
+            return builder.ToString();
+        }
+
+        private static string ParseTimeTablePage(string response, 
+            StringBuilder builder)
+        {
             var numeroTreno = new Regex(@"<h2>.*<\/h2>");
             var numeriTreni = numeroTreno.Matches(response);
-            var strong = 
-                new Regex(@"<strong>.*<\/strong>|[^!]--[^>]|\d+[\s]|in orario|ritardo.*\d+");
+            var strong = new Regex(@"<strong>.*<\/strong>|[^!]--[^>]|\d+[\s]|in orario|ritardo.*\d+");
             var strongs = strong.Matches(response);
             int strongsCounter = 0;
             var perDa = "Per: ";
             foreach (Match m in numeriTreni)
             {
                 builder.AppendLine();
-                if ((strongs[strongsCounter] as Match).Value.ToUpper() == 
-                    "<strong>Partenze</strong>".ToUpper())
+                if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>Partenze</strong>".ToUpper())
                 {
                     builder.AppendLine("PARTENZE");
                     builder.AppendLine();
                     ++strongsCounter;
                 }
-                if ((strongs[strongsCounter] as Match).Value.ToUpper() == 
-                    "<strong>arrivi</strong>".ToUpper())
+                if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>arrivi</strong>".ToUpper())
                 {
                     builder.AppendLine("ARRIVI");
                     builder.AppendLine();
                     perDa = "Da: ";
                     ++strongsCounter;
                 }
-                builder.AppendLine("Treno: " + m.Value
-                    .Replace("<h2>", "")
-                    .Replace("</h2>", ""));
+                builder.AppendLine("Treno: " + m.Value.Replace("<h2>", "").Replace("</h2>", ""));
                 var actualStrongCounter = strongsCounter + 5;
                 var j = 0;
                 for (int i = strongsCounter; i < actualStrongCounter; i++)
@@ -202,9 +233,7 @@ namespace RailBot
                         default:
                             break;
                     }
-                    builder.AppendLine((strongs[i] as Match).Value
-                        .Replace("<strong>", "")
-                        .Replace("</strong>", ""));
+                    builder.AppendLine((strongs[i] as Match).Value.Replace("<strong>", "").Replace("</strong>", ""));
                     ++strongsCounter;
                     ++j;
                 }
