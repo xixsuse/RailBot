@@ -15,6 +15,24 @@ namespace RailBot
 			public static readonly string UpdateID = "\"update_id\":";
 			public static readonly string ChatID = "\"chat\":{\"id\":";
 			public static readonly string Text = "\"text\":\"";
+
+            public static readonly string HelpMessage = 
+                "I comandi possibili sono:" + Environment.NewLine +
+                "/stazione" + Environment.NewLine +
+                "/partenze" + Environment.NewLine +
+                "/arrivi" + Environment.NewLine +
+                "seguiti dal nome della stazione di cui si vuole " +
+                "conoscere la situazione dei treni." + Environment.NewLine +
+                "Il bot risponderà con la situazione dei treni in tempo " +
+                "reale, binari, orario ed eventuale ritardo." +
+                Environment.NewLine + "In ogni momento puoi usare il comando" +
+                Environment.NewLine + "/help" + Environment.NewLine +
+                "Per rileggere questo aiuto.";
+
+            public static readonly string StartMessage = 
+                "BEVENUTO IN RAILBOT! " + Environment.NewLine +
+                "IL BOT CHE RENDE LA VITA DEL VIAGGIATORE PIU' SEMPLICE" +
+                Environment.NewLine + HelpMessage;
 		}
 
         #region Question Parsing
@@ -59,15 +77,22 @@ namespace RailBot
             
             if (command.Length <= 2 || command.Remove(2) != "\\/")
 			{
-                data.ErrorMessage = "Comando non valido. "+
-                    "I comandi cominciano con /. "+
-                    "Scrivi /help per avere un aiuto";
+                data.IgnoreQuestion = true;
 				return;
+
 			}
 
 			var split = command.Split (' ');
 
+
             var s = split[0].Replace("\\/", "");
+            if (!Commands.CommandsList.ContainsValue(s.ToUpper()))
+            {
+                data.ErrorMessage = "Comando non trovato."
+                    + Environment.NewLine +
+                    "/help per avere aiuto.";
+                return;
+            }
             if (data.IsStartOrHelp(s))
                 return;
 
@@ -79,8 +104,10 @@ namespace RailBot
 
             if (argument == null)
             {
-                data.ErrorMessage = "Argomento non valido. "+
-                    "Tutti i comandi devono avere un argomento. "+
+                data.ErrorMessage = "Argomento non valido. " +
+                    Environment.NewLine + 
+                    "Tutti i comandi devono avere un argomento. " +
+                    Environment.NewLine +
                     "Scrivi /help per avere aiuto.";
                 return;
             }
@@ -124,7 +151,16 @@ namespace RailBot
                 data.ErrorMessage = qdata.ErrorMessage;
                 return data;
             }
-                
+            if (qdata.AmIHelp)
+            {
+                data.Message = Constants.HelpMessage;
+                return data;
+            }
+            if (qdata.AmIStart)
+            {
+                data.Message = Constants.StartMessage;
+                return data;
+            }
             if (response.ToUpper()
                 .Contains("Inserire almeno 3 caratteri".ToUpper()))
             {
@@ -142,12 +178,12 @@ namespace RailBot
                 data.Message = response;
             }
 
-            data.Message = ParsePage(response);
+            data.Message = ParsePage(response, qdata.TrainType);
 
             return data;
         }
 
-        private static string ParsePage(string response)
+        private static string ParsePage(string response, TrainTypeEnum trainType)
         {
             var builder = new StringBuilder();
             var h1 = new Regex(@"<h1>.*<\/h1>");
@@ -162,7 +198,7 @@ namespace RailBot
                 .Contains("cerca treno".ToUpper()))
                 return ParseChooseStationPage(builder, response);
 
-            return ParseTimeTablePage(response, builder);
+            return ParseTimeTablePage(response, builder, trainType);
         }
 
         private static string ParseChooseStationPage(StringBuilder builder, 
@@ -184,7 +220,7 @@ namespace RailBot
         }
 
         private static string ParseTimeTablePage(string response, 
-            StringBuilder builder)
+            StringBuilder builder, TrainTypeEnum trainType)
         {
             var numeroTreno = new Regex(@"<h2>.*<\/h2>");
             var numeriTreni = numeroTreno.Matches(response);
@@ -238,7 +274,25 @@ namespace RailBot
                     ++j;
                 }
             }
-            return builder.ToString();
+
+            var returnString = builder.ToString();
+
+            if (trainType == TrainTypeEnum.Arrivals)
+            {
+                var header = returnString.Substring(0,
+                    returnString
+                        .ToUpper()
+                        .IndexOf("partenze".ToUpper()));
+
+                returnString = header + returnString.Substring(returnString
+                        .ToUpper()
+                        .IndexOf("arrivi".ToUpper()));
+            }
+            else if (trainType == TrainTypeEnum.Departures)
+                returnString = returnString.Substring(0, returnString.ToUpper()
+                    .IndexOf("arrivi".ToUpper()));
+
+            return returnString;
         }
 
         #endregion

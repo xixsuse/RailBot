@@ -15,12 +15,12 @@ namespace RailBot
 
         public static Dictionary<string, string> CommandsList = 
             new Dictionary<string, string> {
-            {Start, Start},
-            {Help, Help },
-            {Station, Station },
-            {Arrivals, Arrivals },
-            {Departures, Departures},
-            {TrainNumber, TrainNumber}
+            {Start, Start.ToUpper()},
+            {Help, Help.ToUpper() },
+            {Station, Station.ToUpper() },
+            {Arrivals, Arrivals.ToUpper() },
+            {Departures, Departures.ToUpper()},
+            {TrainNumber, TrainNumber.ToUpper()}
         };
 
         public static bool IsStartOrHelp(string command)

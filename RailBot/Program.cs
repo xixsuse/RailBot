@@ -19,25 +19,30 @@ namespace RailBot
                             DataParser.ParseQuestion (carrier.Question);
                         foreach (var data in questions)
                         {
-                            carrier.AskToWeb(data);
-                            if (carrier.Response != null)
+                            if (!data.IgnoreQuestion)
                             {
-                                var responseData =
-                                    DataParser.ParseResponse(carrier.Response, 
-                                        data);
-                                try{
-                                    carrier.SendDataToBot(responseData);
-                                }
-                                catch
+                                carrier.AskToWeb(data);
+                                if (carrier.Response != null)
                                 {
-                                    responseData.ErrorMessage = 
+                                    var responseData =
+                                        DataParser.ParseResponse(carrier.Response, 
+                                            data);
+                                    try
+                                    {
+                                        carrier.SendDataToBot(responseData);
+                                    }
+                                    catch
+                                    {
+                                        responseData.ErrorMessage = 
                                         "Probabilmente" +
                                         " la risposta è troppo " +
                                         "lunga per le nostre caapcità. " +
                                         "Provare con i comandi /arrivi e /partenze.";
-                                    carrier.SendDataToBot(responseData);
+                                        carrier.SendDataToBot(responseData);
+                                    }
                                 }
                             }
+
                         }
                     }
 					Thread.Sleep (5000);
