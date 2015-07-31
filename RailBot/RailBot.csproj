@@ -46,6 +46,7 @@
     <Compile Include="Configurator.cs" />
     <Compile Include="ResponseData.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="TrainEntry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

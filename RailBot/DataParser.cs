@@ -199,24 +199,43 @@ namespace RailBot
             var strong = new Regex(@"<strong>.*<\/strong>|[^!]--[^>]|\d+[\s]|in orario|ritardo.*\d+");
             var strongs = strong.Matches(response);
             int strongsCounter = 0;
-            var perDa = "Per: ";
+
+            var departuresList = new List<TrainEntry>();
+            var arrivalsList = new List<TrainEntry>();
+
+            TrainEntryTypeEnum trainEntryType = TrainEntryTypeEnum.Number;
+
             foreach (Match m in numeriTreni)
             {
-                builder.AppendLine();
+
+                var tes = new List<TrainEntry>();
+
+
                 if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>Partenze</strong>".ToUpper())
                 {
-                    builder.AppendLine("PARTENZE");
-                    builder.AppendLine();
+                    tes = departuresList;
+                    trainEntryType = TrainEntryTypeEnum.Departure;
                     ++strongsCounter;
                 }
                 if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>arrivi</strong>".ToUpper())
                 {
-                    builder.AppendLine("ARRIVI");
-                    builder.AppendLine();
-                    perDa = "Da: ";
+                    tes = arrivalsList;
+                    trainEntryType = TrainEntryTypeEnum.Arrival;
                     ++strongsCounter;
                 }
-                builder.AppendLine("Treno: " + m.Value.Replace("<h2>", "").Replace("</h2>", ""));
+
+                /*
+                 * METTERE QUA UN CONTROLLO PER SALTARE IL PARSING
+                 * QUANDO NECESSARIO
+                 */
+
+                string treno = m.Value.Replace("<h2>", "").Replace("</h2>", "");
+                string stazione = string.Empty;
+                string ore = string.Empty;
+                string binarioPrev = string.Empty;
+                string binarioReal = string.Empty;
+                string situa = string.Empty;
+
                 var actualStrongCounter = strongsCounter + 5;
                 var j = 0;
                 for (int i = strongsCounter; i < actualStrongCounter; i++)
@@ -224,47 +243,65 @@ namespace RailBot
                     switch (j)
                     {
                         case 0:
-                            builder.Append(perDa);
+                            stazione = (strongs[i] as Match).Value
+                                .Replace("<strong>", "")
+                                .Replace("</strong>", "");
                             break;
                         case 1:
-                            builder.Append("Delle ore: ");
+                            ore = (strongs[i] as Match).Value
+                                .Replace("<strong>", "")
+                                .Replace("</strong>", "");
                             break;
                         case 2:
-                            builder.Append("Binario previsto: ");
+                            binarioPrev = (strongs[i] as Match).Value
+                                .Replace("<strong>", "")
+                                .Replace("</strong>", "");
                             break;
                         case 3:
-                            builder.Append("Binario reale: ");
+                            binarioReal = (strongs[i] as Match).Value
+                                .Replace("<strong>", "")
+                                .Replace("</strong>", "");
                             break;
                         case 4:
-                            builder.Append("Situazione: ");
+                            situa = (strongs[i] as Match).Value
+                                .Replace("<strong>", "")
+                                .Replace("</strong>", "");
                             break;
                         default:
                             break;
                     }
-                    builder.AppendLine((strongs[i] as Match).Value.Replace("<strong>", "").Replace("</strong>", ""));
+
+                    var te = new TrainEntry(treno, stazione, ore, binarioPrev,
+                        binarioReal, situa, trainEntryType);
+                    tes.Add(te);
                     ++strongsCounter;
                     ++j;
                 }
             }
 
-            var returnString = builder.ToString();
-
-            if (trainType == TrainTypeEnum.Arrivals)
+            if (trainType == TrainTypeEnum.Departures || 
+                trainType == TrainTypeEnum.Both)
             {
-                var header = returnString.Substring(0,
-                    returnString
-                        .ToUpper()
-                        .IndexOf("partenze".ToUpper()));
+                builder.AppendLine("PARTENZE");
+                builder.AppendLine();
+                foreach (var te in departuresList)
+                {
+                    builder.Append(te.ToString());
+                }
 
-                returnString = header + returnString.Substring(returnString
-                        .ToUpper()
-                        .IndexOf("arrivi".ToUpper()));
             }
-            else if (trainType == TrainTypeEnum.Departures)
-                returnString = returnString.Substring(0, returnString.ToUpper()
-                    .IndexOf("arrivi".ToUpper()));
 
-            return returnString;
+            if (trainType == TrainTypeEnum.Arrivals || 
+                trainType == TrainTypeEnum.Both)
+            {
+                builder.AppendLine("ARRIVI");
+                builder.AppendLine();
+                foreach (var te in arrivalsList)
+                {
+                    builder.Append(te.ToString());
+                }
+            }
+            return builder.ToString();
         }
 
         #endregion

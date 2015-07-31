@@ -16,5 +16,12 @@ namespace RailBot
 		Station,
 		TrainNumber,
 	}
+
+    public enum TrainEntryTypeEnum
+    {
+        Arrival,
+        Departure,
+        Number,
+    }
 }
 
