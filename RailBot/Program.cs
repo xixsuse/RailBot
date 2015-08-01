@@ -35,27 +35,23 @@ namespace RailBot
                                         continue;
                                     }
                                     carrier.AskToWeb(data);
-                                    if (carrier.Response != null)
+                                    var responseData =
+                                        DataParser.ParseResponse(carrier.Response, 
+                                            data);
+                                    try
                                     {
-                                        var responseData =
-                                            DataParser.ParseResponse(carrier.Response, 
-                                                data);
-                                        try
-                                        {
-                                            carrier.SendDataToBot(responseData);
-                                        }
-                                        catch
-                                        {
-                                            responseData.ErrorMessage = 
-                                            "Probabilmente" +
-                                            " la risposta è troppo " +
-                                            "lunga per le nostre caapcità. " +
-                                            "Provare con i comandi /arrivi e /partenze.";
-                                            carrier.SendDataToBot(responseData);
-                                        }
+                                        carrier.SendDataToBot(responseData);
+                                    }
+                                    catch
+                                    {
+                                        responseData.ErrorMessage = 
+                                        "Probabilmente" +
+                                        " la risposta è troppo " +
+                                        "lunga per le nostre caapcità. " +
+                                        "Provare con i comandi /arrivi e /partenze.";
+                                        carrier.SendDataToBot(responseData);
                                     }
                                 }
-
                             }
                         }
 					    Thread.Sleep (5000);

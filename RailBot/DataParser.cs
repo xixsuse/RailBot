@@ -202,25 +202,23 @@ namespace RailBot
 
             var departuresList = new List<TrainEntry>();
             var arrivalsList = new List<TrainEntry>();
+            var tes = new List<TrainEntry>();
 
             TrainEntryTypeEnum trainEntryType = TrainEntryTypeEnum.Number;
 
             foreach (Match m in numeriTreni)
             {
 
-                var tes = new List<TrainEntry>();
-
-
                 if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>Partenze</strong>".ToUpper())
                 {
-                    tes = departuresList;
                     trainEntryType = TrainEntryTypeEnum.Departure;
+                    tes = departuresList;
                     ++strongsCounter;
                 }
                 if ((strongs[strongsCounter] as Match).Value.ToUpper() == "<strong>arrivi</strong>".ToUpper())
                 {
-                    tes = arrivalsList;
                     trainEntryType = TrainEntryTypeEnum.Arrival;
+                    tes = arrivalsList;
                     ++strongsCounter;
                 }
 
@@ -271,13 +269,25 @@ namespace RailBot
                             break;
                     }
 
-                    var te = new TrainEntry(treno, stazione, ore, binarioPrev,
-                        binarioReal, situa, trainEntryType);
-                    tes.Add(te);
                     ++strongsCounter;
                     ++j;
                 }
+                var te = new TrainEntry(treno, stazione, ore, binarioPrev,
+                    binarioReal, situa, trainEntryType);
+                tes.Add(te);
             }
+
+
+            int maxEntriesNum = 30;
+            int addedEntries = 0;
+
+            int maxDepartures = trainType == TrainTypeEnum.Departures ?
+                maxEntriesNum : trainType == TrainTypeEnum.Arrivals ?
+                0 : maxEntriesNum / 2;
+
+            int maxArrivals = trainType == TrainTypeEnum.Arrivals ?
+                maxEntriesNum : trainType == TrainTypeEnum.Departures ?
+                0 : maxEntriesNum / 2;
 
             if (trainType == TrainTypeEnum.Departures || 
                 trainType == TrainTypeEnum.Both)
@@ -286,7 +296,13 @@ namespace RailBot
                 builder.AppendLine();
                 foreach (var te in departuresList)
                 {
-                    builder.Append(te.ToString());
+                    if (addedEntries != maxDepartures)
+                    {
+                        ++addedEntries;
+                        builder.Append(te.ToString());
+                    }
+                    else
+                        break;
                 }
 
             }
@@ -294,11 +310,18 @@ namespace RailBot
             if (trainType == TrainTypeEnum.Arrivals || 
                 trainType == TrainTypeEnum.Both)
             {
+                addedEntries = 0;
                 builder.AppendLine("ARRIVI");
                 builder.AppendLine();
                 foreach (var te in arrivalsList)
                 {
-                    builder.Append(te.ToString());
+                    if (addedEntries != maxArrivals)
+                    {
+                        ++addedEntries;
+                        builder.Append(te.ToString());
+                    }
+                    else
+                        break;
                 }
             }
             return builder.ToString();

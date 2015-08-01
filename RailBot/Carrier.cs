@@ -54,6 +54,8 @@ namespace RailBot
 
         public void AskToWeb(QuestionData data)
 		{
+            if (data.IsError)
+                return;
 			using (WebClient client = new WebClient())
 			{
 				try
