@@ -54,12 +54,14 @@ namespace RailBot
                                 }
                             }
                         }
-					    Thread.Sleep (5000);
 				    }
                     catch(Exception e)
                     {
                         Console.WriteLine(e.Message + "\n"+e.StackTrace);
-                        Thread.Sleep (5000);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(5000);
                     }
 			    }
 		    }

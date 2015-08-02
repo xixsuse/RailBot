@@ -69,7 +69,8 @@ namespace RailBot
                                 { "stazione", data.Station },
 								{ "lang", "IT" }
 							});
-                    if(data.QuestionType == QuestionTypeEnum.TrainNumber)
+                    else
+                        if(data.QuestionType == QuestionTypeEnum.TrainNumber)
                         response = client.UploadValues(Addresses.ViaggiaURLNumbero, 
                             "POST",
                             new NameValueCollection()

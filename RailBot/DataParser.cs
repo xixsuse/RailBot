@@ -97,14 +97,10 @@ namespace RailBot
 
             string station = null;
 			int? trainNumber = null;
-			int volatileTrainNumber = 0;
             var trainType = TrainTypeEnum.Both;
 
             if (s.ToUpper() == Commands.Station.ToUpper())
                 station = argument;
-            else if (s.ToUpper() == Commands.TrainNumber.ToUpper() &&
-                     int.TryParse(argument, out volatileTrainNumber))
-                trainNumber = volatileTrainNumber;
             else if (s.ToUpper() == Commands.Arrivals.ToUpper())
             {
                 station = argument;
@@ -121,13 +117,18 @@ namespace RailBot
                 if (int.TryParse(argument, out number))
                 {
                     trainNumber = number;
-                    trainType = TrainTypeEnum.Both;
                 }
                 else
                 {
                     data.ErrorMessage = "Numero non valido. Riprovare.";
                     return;
                 }
+            }
+            else
+            {
+                data.ErrorMessage = "Errore generico. Per favore riportare " +
+                    "il problema al tema di sviluppo RailBot.";
+                return;
             }
 
 			data.SetQuestionInfo(true, station, trainNumber, trainType);
@@ -157,6 +158,12 @@ namespace RailBot
                 .Contains("localita&#039; non trovata".ToUpper()))
             {
                 data.ErrorMessage = "Località non trovata";
+                return data;
+            }
+            else if(response.ToUpper()
+                .Contains("numero treno non valido".ToUpper()))
+            {
+                data.ErrorMessage = "Numero treno non valido";
                 return data;
             }
             else
@@ -235,11 +242,6 @@ namespace RailBot
                     tes = arrivalsList;
                     ++strongsCounter;
                 }
-
-                /*
-                 * METTERE QUA UN CONTROLLO PER SALTARE IL PARSING
-                 * QUANDO NECESSARIO
-                 */
 
                 string treno = m.Value.Replace("<h2>", "").Replace("</h2>", "");
                 string stazione = string.Empty;
