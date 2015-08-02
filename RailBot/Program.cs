@@ -29,7 +29,7 @@ namespace RailBot
                             {
                                 if (!data.IgnoreQuestion)
                                 {
-                                    if(data.AmIHelp || data.AmIStart)
+                                    if(data.AmIStartOrHelp)
                                     {
                                         carrier.SendStartOrHelpMessage(data);
                                         continue;

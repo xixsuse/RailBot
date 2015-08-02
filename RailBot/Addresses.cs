@@ -34,10 +34,13 @@ namespace RailBot
                 return null;
         }
 
-		public static string ViaggiaURL  {
-            get{ return "http://www.viaggiatreno.it/" +
-                "vt_pax_internet/mobile/stazione?lang=IT"; }
-		}
+		public static readonly string ViaggiaURL = 
+            "http://www.viaggiatreno.it/" +
+            "vt_pax_internet/mobile/stazione?lang=IT";
+
+        public static readonly string ViaggiaURLNumbero =
+            "http://www.viaggiatreno.it/" +
+            "vt_pax_internet/mobile/numero?lang=IT";
 	}
 }
 

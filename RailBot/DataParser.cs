@@ -115,6 +115,20 @@ namespace RailBot
                 station = argument;
                 trainType = TrainTypeEnum.Departures;
             }
+            else if (s.ToUpper() == Commands.TrainNumber.ToUpper())
+            {
+                int number = 0;
+                if (int.TryParse(argument, out number))
+                {
+                    trainNumber = number;
+                    trainType = TrainTypeEnum.Both;
+                }
+                else
+                {
+                    data.ErrorMessage = "Numero non valido. Riprovare.";
+                    return;
+                }
+            }
 
 			data.SetQuestionInfo(true, station, trainNumber, trainType);
 		}

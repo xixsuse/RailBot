@@ -17,6 +17,13 @@ namespace RailBot
             get;
             private set;
         }
+        public bool AmIStartOrHelp
+        {
+            get
+            { 
+                return AmIHelp || AmIStart;
+            }
+        }
 
         bool _ignoreQuestion = false;
         public bool IgnoreQuestion
