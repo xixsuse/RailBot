@@ -56,16 +56,13 @@ namespace RailBot
             
 		private static void ParseBotCommand(string command, QuestionData data)
 		{
-            
             if (command.Length <= 2 || command.Remove(2) != "\\/")
 			{
                 data.IgnoreQuestion = true;
 				return;
-
 			}
 
 			var split = command.Split (' ');
-
 
             var s = split[0].Replace("\\/", "");
             if (!Commands.CommandsList.ContainsValue(s.ToUpper()))
@@ -171,13 +168,16 @@ namespace RailBot
                 data.Message = response;
             }
 
-            data.Message = ParsePage(response, qdata.TrainType);
+            data.Message = ParsePage(qdata, response, qdata.TrainType);
 
             return data;
         }
 
-        private static string ParsePage(string response, TrainTypeEnum trainType)
+        private static string ParsePage(QuestionData qdata, string response, TrainTypeEnum trainType)
         {
+            var genericErrorMessage = "Errore generico. Per favore, avvisare " +
+                "gli sviluppatori di Rail Bot di ciò che è successo.";
+
             var builder = new StringBuilder();
             var h1 = new Regex(@"<h1>.*<\/h1>");
             var stazione = h1.Match(response);
@@ -191,7 +191,136 @@ namespace RailBot
                 .Contains("cerca treno".ToUpper()))
                 return ParseChooseStationPage(builder, response);
 
-            return ParseTimeTablePage(response, builder, trainType);
+            try
+            {
+            if (qdata.Station != null)
+                return ParseTimeTablePage(response, builder, trainType);
+            else if (qdata.TrainNumber.HasValue)
+                return ParseTrainNumberPage(builder, response);
+            
+            else
+                return genericErrorMessage;
+            }
+            catch
+            {
+                return genericErrorMessage;
+            }
+        }
+
+        private static string ParseTrainNumberPage(StringBuilder builder, 
+            string response)
+        {
+            var origineSection = SelectSection(response, "<!-- ORIGINE -->");
+            var ultimaFermataSection = SelectSection(response, "<!-- ULTIMA FERMATA -->");
+            var destinazioneSection = SelectSection(response, "<!-- DESTINAZIONE -->");
+            var situazioneSection = SelectSection(response, "<!-- SITUAZIONE -->");
+
+            if (!string.IsNullOrWhiteSpace(origineSection) || !string.IsNullOrWhiteSpace(destinazioneSection))
+            {
+                string origine=null;
+                string orarioOrigine=null;
+                string destinazione=null;
+                string orarioDestinazione=null;
+                if (!string.IsNullOrWhiteSpace(origineSection))
+                {
+                    origine = new Regex(@"<h2>.*<\/h2>")
+                        .Match(origineSection).Value
+                        .Replace("<h2>", "").Replace("</h2>", "");
+                    
+                    var orari = new Regex(@"<strong>[\s\S]*?<\/strong>")
+                        .Matches(origineSection);
+                    orarioOrigine = Regex.Replace(orari[0].Value, @"\s+", "")
+                        .Replace("<strong>", "")
+                        .Replace("</strong>", "");
+                }
+                if (!string.IsNullOrWhiteSpace(destinazioneSection))
+                {
+                    destinazione = new Regex(@"<h2>.*<\/h2>")
+                        .Match(destinazioneSection).Value
+                        .Replace("<h2>", "").Replace("</h2>", "");
+
+                    var orari = new Regex(@"<strong>[\s\S]*?<\/strong>")
+                        .Matches(destinazioneSection);
+                    orarioDestinazione = Regex.Replace(orari[0].Value, @"\s+", "")
+                        .Replace("<strong>", "")
+                        .Replace("</strong>", "");
+                }
+
+                if (origine != null && orarioOrigine != null && destinazione != null && orarioDestinazione != null)
+                {
+                    builder.AppendLine(
+                        string.Format(
+                            "{0} ({1}) {4} {2} ({3})",
+                            origine, orarioOrigine,
+                            destinazione, orarioDestinazione,
+                            '\u27A1'
+                        )
+                    );
+                    builder.AppendLine();
+                }
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(situazioneSection) || !string.IsNullOrWhiteSpace(ultimaFermataSection))
+            {
+                builder.AppendLine("SITUAZIONE ù");
+                var replacerForù = ' ';
+                if (!string.IsNullOrWhiteSpace(situazioneSection))
+                {
+                    if (situazioneSection.ToUpper().Contains("ritardo".ToUpper()))
+                        replacerForù = '\u2757';  
+                    else if (situazioneSection.ToUpper().Contains("anticipo".ToUpper()))
+                        replacerForù = '\u2728';   
+                    else if (situazioneSection.ToUpper().Contains("orario".ToUpper()))
+                        replacerForù = '\u2705';    
+                    else if (situazioneSection.ToUpper().Contains("partito".ToUpper()))
+                        replacerForù = '\u270B';                       
+
+                    builder.AppendLine(
+                        Regex.Replace(
+                            Regex.Replace(
+                                situazioneSection
+                    .Replace("<div  class=\"evidenziato\"><strong>", "")
+                    .Replace("<br>", ""), @"\r\n?|\n", ""),
+                            @"\s+", " ").Replace("&#039;", "'")
+                    .TrimStart()
+                    );
+                }
+                if (!string.IsNullOrWhiteSpace(ultimaFermataSection))
+                {
+                    var fermata = new Regex(@"<h2>.*<\/h2>")
+                    .Match(ultimaFermataSection).Value
+                    .Replace("<h2>", "").Replace("</h2>", "");
+                    builder.AppendLine("Ultima fermata:\t" + fermata);
+                    var orari = new Regex(@"<strong>[\s\S]*?<\/strong>")
+                    .Matches(ultimaFermataSection);
+                    builder.AppendLine("Arrivo programmato:\t" +
+                        Regex.Replace(orari[0].Value, @"\s+", "")
+                    .Replace("<strong>", "")
+                    .Replace("</strong>", ""));
+                    builder.AppendLine("Arrivo effettivo:\t" +
+                        Regex.Replace(orari[1].Value, @"\s+", "")
+                    .Replace("<strong>", "")
+                    .Replace("</strong>", ""));
+                }
+                builder.Replace('ù', replacerForù);
+            }
+
+
+
+             return builder.ToString();
+        }
+
+        private static string SelectSection(string response, string sectionIdentifier)
+        {
+            try
+            {
+            var a = response.IndexOf(sectionIdentifier);
+            var b = response.Substring(a).Replace(sectionIdentifier, "");
+            var c = b.Substring(0, b.IndexOf("<!--"));
+                return c;
+            }
+            catch{return null;}
         }
 
         private static string ParseChooseStationPage(StringBuilder builder, 

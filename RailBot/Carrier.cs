@@ -7,7 +7,6 @@ namespace RailBot
 {
 	public class Carrier
 	{
-
         class Constants
         {
             public static readonly string HelpMessage = 
@@ -56,47 +55,43 @@ namespace RailBot
 		{
             if (data.IsError)
                 return;
-			using (WebClient client = new WebClient())
+			try
 			{
-				try
-				{
-                    byte[] response = null;
-                    if (data.QuestionType == QuestionTypeEnum.Station)
-						response = client.UploadValues(Addresses.ViaggiaURL, 
-                            "POST",
-                            new NameValueCollection()
-							{
-                                { "stazione", data.Station },
-								{ "lang", "IT" }
-							});
-                    else
-                        if(data.QuestionType == QuestionTypeEnum.TrainNumber)
-                        response = client.UploadValues(Addresses.ViaggiaURLNumbero, 
-                            "POST",
-                            new NameValueCollection()
-                            {
-                                { "numeroTreno", data.TrainNumber.ToString()},
-                                { "lang", "IT" }
-                            });
-                    else
-                    {
-                        data.ErrorMessage = "Bravo! Sei riuscito ad arrivare " +
-                            "in un punto non previsto. Per favore, segnala " +
-                            "questo problema al team di sviluppo di RailBot";
-                        return;
-                    }
-                        
-
-                    Response = System.Text.Encoding.UTF8.GetString(response);
-				}
-                catch (Exception e)
+                byte[] response = null;
+                if (data.QuestionType == QuestionTypeEnum.Station)
+                response = _wc.UploadValues(Addresses.ViaggiaURL, 
+                        "POST",
+                        new NameValueCollection()
+						{
+                            { "stazione", data.Station },
+							{ "lang", "IT" }
+						});
+                else
+                    if(data.QuestionType == QuestionTypeEnum.TrainNumber)
+                    response = _wc.UploadValues(Addresses.ViaggiaURLNumbero, 
+                        "POST",
+                        new NameValueCollection()
+                        {
+                            { "numeroTreno", data.TrainNumber.ToString()},
+                            { "lang", "IT" }
+                        });
+                else
                 {
-                    Console.WriteLine(e.Message);
-                    data.ErrorMessage = "Errore nella ricezione dei dati. "+
-                        "Per favore riportare questo errore al team " +
-                        "di sviluppo.";
+                    data.ErrorMessage = "Bravo! Sei riuscito ad arrivare " +
+                        "in un punto non previsto. Per favore, segnala " +
+                        "questo problema al team di sviluppo di RailBot";
+                    return;
                 }
+                Response = System.Text.Encoding.UTF8.GetString(response);
 			}
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                data.ErrorMessage = "Errore nella ricezione dei dati. "+
+                    "Per favore riportare questo errore al team " +
+                    "di sviluppo.";
+            }
+		
 		}
 
         public void SendDataToBot(ResponseData response)
