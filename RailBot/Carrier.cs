@@ -18,9 +18,15 @@ namespace RailBot
                 "conoscere la situazione dei treni." + Environment.NewLine +
                 "Il bot risponderà con la situazione dei treni in tempo " +
                 "reale, binari, orario ed eventuale ritardo." +
+                Environment.NewLine +
+                "/numero" + " seguito dal numero del treno che ti interessa, " +
+                "ti darà le informazioni sul singolo treno " +
+                "(puoi anche inviarmi solo il numero del treno senza comando, " +
+                "sono di bocca buona)." +
                 Environment.NewLine + "In ogni momento puoi usare il comando" +
                 Environment.NewLine + "/help" + Environment.NewLine +
-                "Per rileggere questo aiuto.";
+                "Per rileggere questo aiuto." + Environment.NewLine +
+                Environment.NewLine + ":^)";
 
             public static readonly string StartMessage = 
                 "BEVENUTO IN RAILBOT! " + Environment.NewLine +

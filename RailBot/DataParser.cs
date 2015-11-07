@@ -55,14 +55,31 @@ namespace RailBot
             }
             
 		private static void ParseBotCommand(string command, QuestionData data)
-		{
-            if (command.Length <= 2 || command.Remove(2) != "\\/")
-			{
-                data.IgnoreQuestion = true;
-				return;
-			}
+        {
+            var split = command.Split(' ');
 
-			var split = command.Split (' ');
+            #region OnlyOneNumber
+            /*
+             * Se mi mandi uno e un solo numero,
+             * io lo tratto come numero di treno.
+             */
+            var onlyOneNumber = false;
+            var onlyThisNumber = 0;
+            if (split.Length == 1 && int.TryParse(split[0], out onlyThisNumber))
+            {
+                onlyOneNumber = true;
+                split = new string[] { "\\/numero", onlyThisNumber.ToString() };
+            }
+            #endregion OnlyOneNumber
+
+            if (!onlyOneNumber)
+            {
+                if (command.Length <= 2 || command.Remove(2) != "\\/")
+                {
+                    data.IgnoreQuestion = true;
+                    return;
+                }
+            }
 
             var s = split[0].Replace("\\/", "");
             if (!Commands.CommandsList.ContainsValue(s.ToUpper()))
